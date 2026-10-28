@@ -164,6 +164,10 @@ label{font-size:.95rem;color:var(--muted)}
 .reveal .big span.miss{color:var(--friend)}
 @keyframes pop{from{transform:translateY(14px) scale(.5);opacity:.2}to{transform:none;opacity:1}}
 .score{font-family:var(--display);font-size:1.4rem}
+.rank{align-items:center;text-align:center;background:var(--butter)}
+.rank-big{font-family:var(--display);font-size:2rem;line-height:1.3}
+.rank button{width:100%;background:var(--surface)}
+b.f{color:var(--friend)} b.s{color:var(--self)}
 
 .codebox{font-family:var(--mono);font-size:.85rem;background:#FBF9FF;border:2px dashed var(--ink);border-radius:14px;padding:12px;word-break:break-all;user-select:all}
 .list{display:flex;flex-direction:column;gap:10px}
@@ -441,7 +445,9 @@ function friendAnswer(p,keep){
   go('h',()=>nav(null));
   const submit=async(nick,ans)=>{
     loading('답 저장하는 중…');
-    try{await insertResponse(p.id,nick,ans);remember(m=>{m.answered[p.id]=nick});friendDone(p,ans,nick,false)}
+    try{await insertResponse(p.id,nick,ans);remember(m=>{m.answered[p.id]=nick});
+      try{p.res=await getResponses(p.id)}catch(e){p.res=[{nick,a:ans}]}
+      friendDone(p,ans,nick,false)}
     catch(err){
       if(err&&err.code==='23505')friendAnswer(p,{nick,ans,err:'이미 누가 쓴 별명이야. 다른 별명으로 해줘.'});
       else if(/too_many_responses/.test(err&&err.message||''))errorView(errText(err));
@@ -467,19 +473,35 @@ function friendDone(p,ans,nick,isDemo){
     const hit=[...fty].filter((c,i)=>c===bt[i]).length;
     const same=[...ans].filter((c,i)=>c===p.self[i]).length;
     const c=Math.round(closeness(p,ans)*100);
-    const verdict=c>=85?'찰떡이야. 너 '+p.name+' 진짜 잘 안다':c>=60?'꽤 잘 알아. 몇 개만 갈렸어':c>=35?'반은 맞혔어. 아직 모르는 면이 있네':'완전 반전이야. 다른 사람을 보고 있었던 거 아냐?';
+    const verdict=c>=85?'찰떡이야. 너 '+p.name+' 진짜 잘 안다':c>=60?'꽤 잘 알아. 몇 개만 갈렸어':c>=35?'반은 통했어. 나머지는 '+J(p.name,'도','도')+' 모르는 모습일지도?':'반전 발견! '+J(p.name,'도','도')+' 모르는 '+J(p.name,'을','를')+' 네가 찾았을지도?';
+    /* rank among everyone who answered (ties share a place) */
+    const all=(p.res&&p.res.length?p.res:[{nick,a:ans}]).map(r=>({nick:r.nick,c:closeness(p,r.a)}));
+    if(!all.some(r=>r.nick===nick))all.push({nick,c:closeness(p,ans)});
+    const mine=closeness(p,ans);const total=all.length;
+    const rank=1+all.filter(r=>r.c>mine+1e-9).length;
+    const top=all.filter(r=>r.nick!==nick).sort((a,b)=>b.c-a.c)[0];
+    const rankLine=total===1?'첫 번째로 답했어! 지금은 네가 1등':rank===1?`${total}명 중 1등!${top&&Math.abs(top.c-mine)<1e-9?' (공동)':''}`:`${total}명 중 ${rank}등!`;
+    const rankSub=total===1?'친구들이 답하면 순위가 바뀔 수 있어.':rank===1?(top?`2등 ${esc(J(top.nick,'이랑','랑'))} ${Math.round((mine-top.c)*100)}% 차이`:''):`1등 ${esc(top.nick)}까지 ${Math.round((top.c-mine)*100)}% 남았어`;
     const mi=[...ans].findIndex((ch,k)=>ch!==p.self[k]);
     document.getElementById('rv').hidden=true;
     document.getElementById('out').innerHTML=`<div class="list" style="gap:20px">
       <section class="panel reveal">${mascot(c>=60?'happy':'wow',90)}<span class="eyebrow">${p.real?'진짜 '+esc(p.name):esc(J(p.name,'이','가'))+' 직접 답한 결과'}</span>
         <div class="big">${[...bt].map((ch,i)=>`<span class="${ch!==fty[i]?'miss':''}">${ch}</span>`).join('')}</div>
         <h2>${nickname(bt)}</h2>
-        <p class="score">4글자 중 ${hit}개 맞힘 · 닮은 정도 ${c}%</p><p>${esc(verdict)}</p></section>
-      ${mi>=0?`<section class="panel"><span class="eyebrow">네가 놓친 장면</span>
-        <p>너는 <b>"${esc(QS[mi].t[ix(ans[mi])])}"</b>일 거라고 했지만,<br>${esc(J(p.name,'은','는'))} <b>"${esc(QS[mi].t[ix(p.self[mi])])}"</b>${P(QS[mi].t[ix(p.self[mi])],'이래','래')}.</p>
+        <p class="score">4글자 중 ${hit}개 · 닮은 정도 ${c}%</p><p>${esc(verdict)}</p></section>
+      <section class="panel rank"><span class="eyebrow">누가 ${esc(J(p.name,'을','를'))} 제일 잘 알까</span>
+        <p class="rank-big">${rankLine}</p>${rankSub?`<p class="muted">${rankSub}</p>`:''}
+        ${isDemo?'':`<button class="primary" data-share2>친구한테도 보내서 대결하기</button>`}</section>
+      ${mi>=0?`<section class="panel"><span class="eyebrow">네가 찾은 반전</span>
+        <p>너는 <b class="f">"${esc(QS[mi].t[ix(ans[mi])])}"</b>일 것 같다고 했는데,<br>${esc(J(p.name,'은','는'))} 스스로 <b class="s">"${esc(QS[mi].t[ix(p.self[mi])])}"</b>${P(QS[mi].t[ix(p.self[mi])],'이래','래')}.</p>
+        <p class="muted">누구 말이 맞을까? ${esc(J(p.name,'이','가'))} 모르는 모습일 수도 있어.</p>
         <p class="muted">${N}개 장면 중 ${same}개 같았어.</p></section>`:''}
       <div class="row">${isDemo?'':'<button class="primary" id="all">다른 친구들 평가 보기</button>'}<button id="mine">나도 내 거울 만들기</button></div></div>`;
     go('all',()=>nav(p.id));go('mine',createName);
+    app.querySelectorAll('[data-share2]').forEach(b=>b.onclick=async()=>{
+      const url=linkFor(p.id),text=`나 ${J(p.name,'을','를')} ${total}명 중 ${rank}등으로 잘 알아. 너는 몇 등일까?`;
+      if(navigator.share){navigator.share({title:'남이 본 나',text,url}).catch(()=>{});return}
+      try{await navigator.clipboard.writeText(text+' '+url);toast('링크 복사했어')}catch(e){toast(url)}});
   });
 }
 
