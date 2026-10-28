@@ -1,0 +1,445 @@
+<title>남이 본 나</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column, like a phone mirror. Two semantic colors: blue = 진짜 나 / 내가 본 나, orange = 남이 본 나 */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --ink:#16212A; --muted:#5A6A75; --line:#D2DBE1;
+  --self:#2D5BD8; --self-soft:#DCE5FB; --friend:#DD5F2E; --friend-soft:#FBE3D8; --both:#2E8A6A; --both-soft:#D8F0E6;
+  --display:"Do Hyeon","IBM Plex Sans KR",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10171D; --surface:#18222A; --ink:#E6EDF2; --muted:#93A3AE; --line:#2B3843;
+  --self:#7EA2FF; --self-soft:#22314F; --friend:#FF9467; --friend-soft:#45291E; --both:#5CCB9F; --both-soft:#1C3A2F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10171D; --surface:#18222A; --ink:#E6EDF2; --muted:#93A3AE; --line:#2B3843;
+  --self:#7EA2FF; --self-soft:#22314F; --friend:#FF9467; --friend-soft:#45291E; --both:#5CCB9F; --both-soft:#1C3A2F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:2.3rem} h2{font-size:1.5rem} h3{font-size:1.2rem}
+p{margin:0}
+.muted{color:var(--muted);font-size:.93rem}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;color:var(--muted);font-weight:500}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+button{font:inherit;font-weight:500;border-radius:10px;padding:12px 16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--self);outline-offset:2px}
+button.link{border:0;background:none;padding:4px 0;color:var(--muted);text-decoration:underline}
+input[type=text]{font:inherit;width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+label{font-size:.9rem;color:var(--muted)}
+.hero{display:flex;flex-direction:column;gap:10px;padding-top:8px}
+.hero h1 .s{color:var(--self)} .hero h1 .f{color:var(--friend)}
+.badge{font-size:.75rem;letter-spacing:.06em;color:var(--friend);font-weight:700}
+.err{color:var(--friend);font-size:.9rem}
+.big-cta{padding:16px;font-size:1.05rem;width:100%}
+
+/* 4. one-line nickname: me vs them */
+.names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nmcard{border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.nmcard.me{background:var(--self-soft)} .nmcard.them{background:var(--friend-soft)}
+.nmcard .lab{font-size:.78rem;font-weight:500}
+.nmcard.me .lab{color:var(--self)} .nmcard.them .lab{color:var(--friend)}
+.nmcard .nick{font-family:var(--display);font-size:1.35rem;line-height:1.25}
+.nmcard .ty{font-family:var(--display);font-size:1rem;letter-spacing:.08em;color:var(--muted)}
+.ty .diff{color:var(--friend)}
+
+/* 2. the reversal scene */
+.scene{display:flex;flex-direction:column;gap:12px}
+.scene .said{font-size:1.05rem;line-height:1.55}
+.scene .said b{color:var(--self);font-weight:700}
+.scene .but{font-size:1.25rem;line-height:1.5;font-weight:700}
+.scene .but b{color:var(--friend)}
+.meter{display:flex;gap:4px;flex-wrap:wrap}
+.meter i{width:22px;height:22px;border-radius:50%;background:var(--line)}
+.meter i.on{background:var(--friend)}
+
+/* 1. Johari windows */
+.windows{display:flex;flex-direction:column;gap:10px}
+.win{border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.win.both{background:var(--both-soft)} .win.mine{background:var(--self-soft)} .win.theirs{background:var(--friend-soft)}
+.win .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.win h3{font-size:1.15rem}
+.win.both h3{color:var(--both)} .win.mine h3{color:var(--self)} .win.theirs h3{color:var(--friend)}
+.win .sub{font-size:.8rem;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.88rem;padding:5px 10px;border-radius:99px;background:var(--surface);border:1px solid var(--line)}
+.win .empty{font-size:.88rem;color:var(--muted)}
+
+/* 3. friends split */
+.split{display:flex;flex-direction:column;gap:8px;padding-block:12px;border-top:1px solid var(--line)}
+.split .t{font-weight:500}
+.side2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.side2 div{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;min-width:0;font-size:.85rem}
+.side2 b{font-weight:700;color:var(--friend)}
+
+/* orbit: me in the middle, friends around by closeness */
+.orbit{position:relative;width:100%;max-width:440px;aspect-ratio:1;margin:0 auto}
+.orbit svg{position:absolute;inset:0;width:100%;height:100%}
+.orbit svg line{stroke:var(--line);stroke-width:.4}
+.orbit svg circle{fill:none;stroke:var(--line);stroke-width:.3;stroke-dasharray:1 1.4}
+.orbit svg text{fill:var(--muted);font-size:3px;font-family:var(--body)}
+.center,.node{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:50%}
+.center{left:50%;top:50%;width:26%;aspect-ratio:1;background:var(--self);color:var(--surface);gap:2px}
+.center .nm{font-size:.74rem;font-weight:700;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.center .ty{font-family:var(--display);font-size:clamp(1.15rem,5vw,1.7rem);letter-spacing:.05em;line-height:1}
+.center .cap{font-size:.66rem;opacity:.85}
+.node{width:19%;aspect-ratio:1;background:var(--friend-soft);border:2px solid var(--surface)}
+.node .nm{font-size:.68rem;font-weight:700;color:var(--friend);max-width:88%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node .ty{font-family:var(--display);font-size:clamp(.9rem,3.8vw,1.2rem);letter-spacing:.04em;line-height:1.1;color:var(--ink)}
+.says{display:flex;flex-direction:column}
+.say{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-block:10px;border-top:1px solid var(--line)}
+.say:first-child{border-top:0}
+.say .who{min-width:0} .say .who b{color:var(--friend)}
+.say .tc{font-family:var(--display);font-size:1.3rem;letter-spacing:.04em;white-space:nowrap}
+.say .tc .diff{color:var(--friend)}
+
+/* quiz */
+.progress{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--ink);transition:width .2s}
+.q{font-size:1.25rem;font-weight:700;line-height:1.45}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{text-align:left;padding:16px;font-weight:400;line-height:1.45}
+.choice:hover{border-color:var(--ink)}
+.ask{font-size:.9rem;font-weight:500}
+.ask.self{color:var(--self)} .ask.friend{color:var(--friend)}
+
+/* reveal for the friend */
+.reveal{text-align:center;align-items:center}
+.reveal .big{font-family:var(--display);font-size:3.4rem;letter-spacing:.08em;line-height:1;color:var(--self)}
+.reveal .big span{display:inline-block;animation:pop .5s both}
+.reveal .big span:nth-child(2){animation-delay:.25s}.reveal .big span:nth-child(3){animation-delay:.5s}.reveal .big span:nth-child(4){animation-delay:.75s}
+.reveal .big span.miss{color:var(--friend)}
+@keyframes pop{from{transform:translateY(12px) scale(.6);opacity:.2}to{transform:none;opacity:1}}
+.score{font-family:var(--display);font-size:1.4rem}
+
+.codebox{font-family:var(--mono);font-size:.82rem;background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:12px;word-break:break-all;user-select:all}
+.list{display:flex;flex-direction:column;gap:8px}
+.list button{display:flex;justify-content:space-between;gap:10px;text-align:left}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script>
+/* s: situation, a: choices, t: short trait for each choice (used in result sentences), x: axis */
+const QS=[
+ {s:'금요일 저녁, 약속이 갑자기 취소됐다.',a:['바로 다른 친구한테 연락해서 다시 약속을 잡는다','오히려 좋아. 집에서 혼자 쉰다'],t:['약속 깨지면 바로 딴 약속 잡음','약속 깨지면 집에서 쉼'],x:0},
+ {s:'처음 가는 모임에 혼자 도착했다.',a:['옆 사람한테 먼저 말을 건다','누가 말 걸어줄 때까지 폰 보며 기다린다'],t:['처음 보는 사람한테 먼저 말 검','누가 말 걸 때까지 기다림'],x:0},
+ {s:'주말 내내 사람들 만나고 온 일요일 밤.',a:['"재밌었다, 또 놀자" 하고 단톡에 남긴다','방전돼서 연락을 잠깐 안 받는다'],t:['사람 만나면 충전됨','사람 만나면 방전됨'],x:0},
+ {s:'여행 계획을 세우는 중이다.',a:['맛집, 동선, 가격부터 검색한다','"거기 가면 분위기 좋겠다" 상상부터 한다'],t:['여행 가면 맛집·동선부터 찾음','여행 가면 분위기부터 상상함'],x:1},
+ {s:'영화 보고 나와서 얘기하는 중이다.',a:['"그 장면 연기 미쳤다" 하고 장면 얘기를 한다','"근데 결말이 무슨 뜻일까" 하고 해석 얘기를 한다'],t:['영화 보면 장면 얘기','영화 보면 해석 얘기'],x:1},
+ {s:'누가 길을 물어봤다.',a:['"편의점 지나서 두 번째 골목 오른쪽"처럼 알려준다','"큰 건물 보이는 쪽으로 쭉 가면 돼"처럼 알려준다'],t:['길도 정확하게 알려줌','길도 감으로 알려줌'],x:1},
+ {s:'친구가 "나 면접 망쳤어"라고 한다.',a:['뭐가 문제였는지 같이 따져본다','"많이 속상하지" 하고 먼저 위로한다'],t:['위로보다 해결책이 먼저','해결책보다 위로가 먼저'],x:2},
+ {s:'하기 싫은 부탁을 받았다.',a:['안 되는 이유를 말하고 깔끔하게 거절한다','상대 기분 상할까 봐 고민하다 결국 들어준다'],t:['싫은 부탁은 딱 거절','싫은 부탁도 결국 들어줌'],x:2},
+ {s:'단톡방에서 의견이 둘로 갈렸다.',a:['맞다고 생각하는 쪽을 근거 대고 말한다','분위기 안 깨지게 중간에서 정리한다'],t:['단톡에서 할 말은 함','단톡에서 분위기 중재함'],x:2},
+ {s:'다음 주에 여행을 간다. 짐은?',a:['며칠 전에 체크리스트 보며 싼다','출발 전날 밤에 몰아서 싼다'],t:['짐은 며칠 전에 미리 쌈','짐은 전날 밤에 몰아서 쌈'],x:3},
+ {s:'주말 계획이 당일 아침에 바뀌었다.',a:['좀 불편하다. 원래 계획대로가 좋다','오히려 재밌다. 그때그때 하면 된다'],t:['계획 바뀌면 불편함','계획 바뀌면 오히려 신남'],x:3},
+ {s:'다 같이 밥 먹기로 했다.',a:['식당을 미리 찾아서 예약까지 해둔다','"만나서 정하자" 하고 일단 나간다'],t:['밥 약속엔 예약까지 해둠','밥 약속은 만나서 정함'],x:3}
+];
+const AX=[['E','I'],['S','N'],['T','F'],['J','P']];
+const N=QS.length;
+const MAXNODE=8;
+
+/* demo: 지민 (real INFJ) and five friends — example data only */
+const DEMO={id:'demo00',name:'지민',real:'INFJ',self:'bbbbbbbbbaaa',res:[
+  ['민수','aabbbbabbbbb'],['하은','abbbbbbbbbba'],['준호','aaaababababbb'.slice(0,12)],['서연','bbbbbbbbbabb'],['도윤','aabbbbbbbbbb']
+].map(([nick,a])=>({nick,a}))};
+const DEMO_FRIEND={nick:'서연',a:'bbbbbbbbbabb'};
+
+/* ---------- Supabase (publishable key is meant to be public; rules live in RLS) ---------- */
+const SB_URL='https://rtodeywewcaxjfartdyc.supabase.co';
+const SB_KEY='sb_publishable_FLkC4qumtHIdevd-jAHhQg_wbFcWeMF';
+let sb=null;
+try{if(window.supabase&&window.supabase.createClient)sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}})}catch(e){sb=null}
+const fromRow=m=>({id:m.id,name:m.name,real:m.real_type||'',self:m.self_answers,res:[]});
+async function getMirror(id){
+  const {data,error}=await sb.from('mirrors').select('id,name,real_type,self_answers').eq('id',id).maybeSingle();
+  if(error)throw error;return data?fromRow(data):null;
+}
+async function getResponses(id){
+  const {data,error}=await sb.from('responses').select('nickname,answers,created_at').eq('mirror_id',id).order('created_at');
+  if(error)throw error;return data.map(r=>({nick:r.nickname,a:r.answers}));
+}
+async function createMirror(name,real,self){
+  const {data,error}=await sb.from('mirrors').insert({name,real_type:real||null,self_answers:self}).select('id').single();
+  if(error)throw error;return data.id;
+}
+async function insertResponse(id,nick,ans){
+  const {error}=await sb.from('responses').insert({mirror_id:id,nickname:nick,answers:ans});
+  if(error)throw error;
+}
+
+/* ---------- this browser remembers which mirrors I made / answered (convenience only) ---------- */
+const LS='mirror.v3';
+function mem(){try{const m=JSON.parse(localStorage.getItem(LS));return m&&m.mine?m:{mine:{},answered:{}}}catch(e){return{mine:{},answered:{}}}}
+function remember(fn){const m=mem();fn(m);try{localStorage.setItem(LS,JSON.stringify(m))}catch(e){}}
+
+/* ---------- scoring ---------- */
+function axisShare(list){return AX.map((_,x)=>{let a=0,t=0;list.forEach(s=>QS.forEach((q,i)=>{if(q.x===x){t++;if(s[i]==='a')a++}}));return t?a/t:.5})}
+const typeOf=sh=>sh.map((v,x)=>v>.5?AX[x][0]:v<.5?AX[x][1]:'X').join('');
+const baseType=t=>t.real||typeOf(axisShare([t.self]));
+function closeness(t,a){
+  if(t.real){const sh=axisShare([a]);return sh.reduce((s,v,x)=>s+(t.real[x]===AX[x][0]?v:1-v),0)/4}
+  return [...a].filter((c,i)=>c===t.self[i]).length/N;
+}
+/* 4. two-word nickname from a type */
+const ADJ={TJ:'빈틈없는',TP:'쿨한',FJ:'다정한',FP:'자유로운'};
+const NOUN={ES:'분위기 메이커',EN:'아이디어 뱅크',IS:'든든한 현실파',IN:'몽상가'};
+const nickname=ty=>(ADJ[ty[2]+ty[3]]||'알쏭달쏭한')+' '+(NOUN[ty[0]+ty[1]]||'반전 매력러');
+/* per question: what most friends said and how strongly */
+function perQuestion(t){
+  const n=t.res.length;
+  return QS.map((q,i)=>{
+    const aWho=t.res.filter(r=>r.a[i]==='a').map(r=>r.nick),bWho=t.res.filter(r=>r.a[i]==='b').map(r=>r.nick);
+    const maj=aWho.length>=bWho.length?'a':'b';const share=Math.max(aWho.length,bWho.length)/n;
+    const kind=share<=.6?'split':(maj===t.self[i]?'both':'blind');
+    return{i,q,maj,share,kind,aWho,bWho,mine:t.self[i]};
+  });
+}
+
+/* ---------- helpers ---------- */
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const linkFor=id=>location.origin+location.pathname+'?m='+id;
+const ix=c=>c==='a'?0:1;
+/* Korean particle: J('지민','은','는') -> '지민은'; P(word,'이래','래') -> just the particle */
+const J=(w,a,b)=>{const c=w.charCodeAt(w.length-1);const has=c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0;return w+(has?a:b)};
+const P=(w,a,b)=>J(w,a,b).slice(w.length);
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,1800)}
+function copy(text,box){
+  const fb=()=>{const r=document.createRange();r.selectNodeContents(box);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('선택했어. 길게 눌러 복사해줘')};
+  try{navigator.clipboard.writeText(text).then(()=>toast('복사했어'),fb)}catch(e){fb()}
+}
+const codeBlock=(text,label)=>`<div class="codebox" data-copy>${esc(text)}</div><div class="row"><button class="primary" data-copybtn>${label}</button></div>`;
+function wireCopy(){app.querySelectorAll('[data-copybtn]').forEach(b=>{const box=b.closest('.panel').querySelector('[data-copy]');b.onclick=()=>copy(box.textContent,box)})}
+const diffLetters=(t,o)=>t.split('').map((c,i)=>`<span class="${c!==o[i]?'diff':''}">${c}</span>`).join('');
+const go=(id,fn)=>{const el=document.getElementById(id);if(el)el.onclick=fn};
+
+/* ---------- result blocks ---------- */
+function namesHTML(t,fty){
+  const bt=baseType(t);
+  return `<div class="names">
+    <div class="nmcard me"><span class="lab">${t.real?'진짜 '+esc(t.name):esc(J(t.name,'이','가'))+' 답한 나'}</span><span class="nick">${nickname(bt)}</span><span class="ty">${bt}</span></div>
+    <div class="nmcard them"><span class="lab">친구 ${t.res.length}명 눈엔</span><span class="nick">${nickname(fty)}</span><span class="ty">${diffLetters(fty,bt)}</span></div></div>`;
+}
+function sceneHTML(t,pq){
+  const n=t.res.length;
+  const blind=pq.filter(p=>p.kind==='blind').sort((a,b)=>b.share-a.share)[0];
+  if(blind){const k=Math.round(blind.share*n);
+    return `<div class="scene"><span class="eyebrow">가장 큰 반전</span>
+      <p class="said">${esc(J(t.name,'은','는'))} <b>"${esc(blind.q.t[ix(blind.mine)])}"</b>${P(blind.q.t[ix(blind.mine)],'이라고','라고')} 했는데,</p>
+      <p class="but">친구 ${n}명 중 ${k}명은 <b>"${esc(blind.q.t[ix(blind.maj)])}"</b>${P(blind.q.t[ix(blind.maj)],'이래','래')}.</p>
+      <div class="meter" aria-label="${n}명 중 ${k}명">${Array.from({length:n},(_,i)=>`<i class="${i<k?'on':''}"></i>`).join('')}</div></div>`}
+  const top=pq.filter(p=>p.kind==='both').sort((a,b)=>b.share-a.share)[0];
+  return `<div class="scene"><span class="eyebrow">반전 없음</span><p class="but">친구들이 ${esc(J(t.name,'을','를'))} 꽤 정확히 알아.</p>
+    ${top?`<p class="said">특히 <b>"${esc(top.q.t[ix(top.mine)])}"</b>${P(top.q.t[ix(top.mine)],'은','는')} ${Math.round(top.share*n)}명이 똑같이 말했어.</p>`:''}</div>`;
+}
+function windowsHTML(t,pq){
+  const both=pq.filter(p=>p.kind==='both').map(p=>p.q.t[ix(p.mine)]);
+  const blind=pq.filter(p=>p.kind==='blind');
+  const chips=(arr,empty)=>arr.length?`<div class="chips">${arr.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</div>`:`<p class="empty">${empty}</p>`;
+  return `<div class="windows">
+    <div class="win both"><div class="hd"><h3>다 아는 나</h3><span class="sub">나도 친구도 그렇다고 함</span></div>${chips(both,'아직 없어')}</div>
+    <div class="win theirs"><div class="hd"><h3>남만 아는 나</h3><span class="sub">나는 아니라는데 친구들은 그렇대</span></div>${chips(blind.map(p=>p.q.t[ix(p.maj)]),'없어. 숨은 모습이 안 들켰어')}</div>
+    <div class="win mine"><div class="hd"><h3>나만 아는 나</h3><span class="sub">나는 그렇다는데 친구들은 몰라</span></div>${chips(blind.map(p=>p.q.t[ix(p.mine)]),'없어. 다 들켰어')}</div></div>`;
+}
+function splitHTML(pq){
+  const sp=pq.filter(p=>p.kind==='split');
+  if(!sp.length)return `<p class="muted">친구들 의견이 갈린 질문이 없어. 다들 비슷하게 보고 있어.</p>`;
+  return `<p class="muted">친구마다 다르게 본 장면이야. 누구 앞에서 어떤 모습인지 갈리는 부분.</p>`+sp.map(p=>`<div class="split"><span class="t">${esc(p.q.s)}</span>
+    <div class="side2"><div><span>${esc(p.q.t[0])}</span><b>${p.aWho.map(esc).join(', ')||'없음'}</b></div>
+    <div><span>${esc(p.q.t[1])}</span><b>${p.bWho.map(esc).join(', ')||'없음'}</b></div></div></div>`).join('');
+}
+function orbitHTML(t){
+  const res=t.res.slice(-MAXNODE);const k=res.length;const bt=baseType(t);
+  const rMin=Math.min(30,Math.max(23,10.5/Math.sin(Math.PI/Math.max(k,2)))),rMax=40;
+  const pos=res.map((r,i)=>{const a=-Math.PI/2+i*2*Math.PI/Math.max(k,1);const rad=rMin+(1-closeness(t,r.a))*(rMax-rMin);return[50+rad*Math.cos(a),50+rad*Math.sin(a)]});
+  return `<div class="orbit" role="img" aria-label="${esc(J(t.name,'을','를'))} 가운데 두고, 비슷하게 본 친구일수록 가깝게 놓은 그림">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${rMin}"/><circle cx="50" cy="50" r="${rMax}"/>
+      <text x="50" y="${50-rMin-1}" text-anchor="middle">찰떡</text><text x="50" y="${50-rMax-1}" text-anchor="middle">글쎄</text>
+      ${pos.map(([x,y])=>`<line x1="50" y1="50" x2="${x}" y2="${y}"/>`).join('')}</svg>
+    ${res.map((r,i)=>`<div class="node" style="left:${pos[i][0]}%;top:${pos[i][1]}%"><span class="nm">${esc(r.nick)}</span><span class="ty">${diffLetters(typeOf(axisShare([r.a])),bt)}</span></div>`).join('')}
+    <div class="center"><span class="nm">${esc(t.name)}</span><span class="ty">${bt}</span><span class="cap">${t.real?'진짜 나':'내가 본 나'}</span></div></div>
+    ${t.res.length>MAXNODE?`<p class="muted">둘레에는 최근 ${MAXNODE}명만 보여. 전체는 아래 목록에 있어.</p>`:''}
+    <div class="says">${t.res.map(r=>({r,c:closeness(t,r.a)})).sort((a,b)=>b.c-a.c).map(({r,c})=>`<div class="say"><span class="who"><b>${esc(r.nick)}</b>의 평가<br><span class="muted">닮은 정도 ${Math.round(c*100)}%</span></span><span class="tc">${diffLetters(typeOf(axisShare([r.a])),bt)}</span></div>`).join('')}</div>`;
+}
+
+/* ---------- views ---------- */
+function home(){
+  const mine=Object.entries(mem().mine);
+  app.innerHTML=`
+  <header class="hero"><span class="eyebrow">남이 본 나</span>
+    <h1>내가 아는 <span class="s">나</span>랑<br>친구가 아는 <span class="f">나</span>, 같을까?</h1>
+    <p class="muted">질문 ${N}개에 내가 먼저 답하고 링크를 친구들한테 보내. 친구들 답이 모이면 들킨 나와 숨은 나를 찾아줘.</p></header>
+  ${sb?'':'<p class="err">지금 서버에 연결이 안 돼. 잠시 후 새로고침해줘.</p>'}
+  <div class="list"><button class="primary big-cta" id="new">내 거울 만들기</button>
+    <div class="row"><button class="link" id="demo">결과 예시 보기</button></div></div>
+  ${mine.length?`<section class="panel"><h2>내 거울</h2><div class="list">${mine.sort((x,y)=>y[1].at-x[1].at).map(([id,t])=>`<button data-open="${id}"><span>${esc(t.name)}</span><span class="muted">결과 보기</span></button>`).join('')}</div></section>`:''}`;
+  go('new',createName);go('demo',()=>resultView(DEMO,{demo:true}));
+  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>nav(b.dataset.open));
+}
+function loading(msg){app.innerHTML=`<section class="panel"><p class="muted">${esc(msg)}</p></section>`}
+function errorView(msg){
+  app.innerHTML=`<section class="panel"><h2>앗, 문제가 생겼어</h2><p>${esc(msg)}</p>
+    <div class="row"><button class="primary" id="re">다시 시도</button><button class="link" id="h">처음으로</button></div></section>`;
+  go('re',start);go('h',()=>nav(null));
+}
+const errText=e=>/too_many_responses/.test(e&&e.message||'')?'이 거울은 답이 꽉 찼어 (최대 50명).':'서버랑 연결이 안 됐어. 인터넷을 확인하고 다시 시도해줘.';
+
+function createName(){
+  if(!sb){errorView('지금 서버에 연결이 안 돼. 잠시 후 다시 시도해줘.');return}
+  app.innerHTML=`<section class="panel"><span class="eyebrow">1 / 3 · 나</span><h2>친구들이 너를 뭐라고 불러?</h2>
+    <form id="f" class="list">
+      <label for="nm">질문에 "○○라면?"으로 들어갈 이름</label><input type="text" id="nm" maxlength="12" placeholder="예: 동빈" autocomplete="off">
+      <label for="real">진짜 4글자 (선택) · 친구가 답을 다 하면 마지막에 공개돼</label>
+      <input type="text" id="real" maxlength="4" placeholder="예: INFJ" autocomplete="off" style="text-transform:uppercase">
+      <p class="err" id="er" hidden></p>
+      <div class="row"><button class="primary" type="submit">다음</button><button type="button" class="link" id="back">처음으로</button></div></form></section>`;
+  go('back',()=>nav(null));
+  const nm=document.getElementById('nm');nm.focus();
+  document.getElementById('f').onsubmit=e=>{e.preventDefault();const n=nm.value.trim();const real=document.getElementById('real').value.trim().toUpperCase();const er=document.getElementById('er');
+    if(!n){er.textContent='이름을 넣어줘.';er.hidden=false;return}
+    if(real&&!/^[EI][SN][TF][JP]$/.test(real)){er.textContent='4글자는 E/I, S/N, T/F, J/P 순서로 넣어줘.';er.hidden=false;return}
+    quiz({mode:'self',name:n,done:async ans=>{
+      loading('거울 만드는 중…');
+      try{const id=await createMirror(n,real,ans);remember(m=>{m.mine[id]={name:n,at:Date.now()}});
+        try{history.pushState(null,'','?m='+id)}catch(e){}
+        shareView(id,n)}
+      catch(err){errorView(errText(err))}}})};
+}
+
+function quiz({mode,name,done}){
+  const ans=[];let i=0;
+  const step=()=>{const q=QS[i];
+    app.innerHTML=`<section class="panel"><div class="progress"><i style="width:${i/N*100}%"></i></div>
+      <span class="eyebrow">${i+1} / ${N}</span>
+      <p class="ask ${mode}">${mode==='self'?'나라면?':esc(J(name,'이라면','라면'))+' 어떻게 할 것 같아?'}</p>
+      <p class="q">${esc(q.s)}</p>
+      <div class="choices">${q.a.map((t,k)=>`<button class="choice" data-k="${k}">${esc(t)}</button>`).join('')}</div>
+      <div class="row">${i>0?'<button class="link" id="prev">이전 질문</button>':''}</div></section>`;
+    app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{ans[i]=b.dataset.k==='0'?'a':'b';i++;i<N?step():done(ans.join(''))});
+    go('prev',()=>{i--;step()});
+  };step();
+}
+
+function shareBlock(id,name){
+  return `<div class="codebox" data-copy>${esc(linkFor(id))}</div>
+    <div class="row"><button class="primary" data-copybtn>링크 복사</button>${navigator.share?'<button data-share>공유하기</button>':''}</div>`;
+}
+function wireShare(id,name){
+  wireCopy();
+  app.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>{navigator.share({title:'남이 본 나',text:`${J(name,'은','는')} 어떤 사람 같아? 질문 ${N}개면 끝나`,url:linkFor(id)}).catch(()=>{})});
+}
+function shareView(id,name){
+  app.innerHTML=`<section class="panel"><span class="eyebrow">3 / 3 · 보내기</span><h2>이 링크를 친구들한테 보내</h2>
+    <p class="muted">친구가 링크를 열면 바로 질문이 시작돼. 답이 들어오면 내 거울에 자동으로 쌓여.</p>
+    ${shareBlock(id,name)}</section>
+    <div class="row"><button id="go">내 거울 보기</button><button class="link" id="h">처음으로</button></div>`;
+  wireShare(id,name);go('go',()=>nav(id));go('h',()=>nav(null));
+}
+
+function friendAnswer(p,keep){
+  app.innerHTML=`<section class="panel"><span class="eyebrow">${esc(p.name)}의 거울</span>
+    <h2>${esc(J(p.name,'은','는'))} 어떤 사람 같아?</h2>
+    <p class="muted">${N}개 상황에서 ${esc(J(p.name,'이라면','라면'))} 어떻게 할지 골라줘. 다 답하면 진짜 ${esc(J(p.name,'을','를'))} 공개해줄게.</p>
+    <form id="f" class="list"><label for="nk">네 별명 · 실명 아니어도 돼. 결과에 이 이름으로 떠</label>
+    <input type="text" id="nk" maxlength="8" autocomplete="off" placeholder="예: 민수, 고양이집사" value="${esc(keep?keep.nick:'')}">
+    <p class="err" id="er" ${keep&&keep.err?'':'hidden'}>${esc(keep&&keep.err||'별명을 하나 정해줘.')}</p>
+    <div class="row"><button class="primary" type="submit">${keep?'이 별명으로 저장':'시작'}</button><button type="button" class="link" id="h">처음으로</button></div></form></section>`;
+  go('h',()=>nav(null));
+  const submit=async(nick,ans)=>{
+    loading('답 저장하는 중…');
+    try{await insertResponse(p.id,nick,ans);remember(m=>{m.answered[p.id]=nick});friendDone(p,ans,nick,false)}
+    catch(err){
+      if(err&&err.code==='23505')friendAnswer(p,{nick,ans,err:'이미 누가 쓴 별명이야. 다른 별명으로 해줘.'});
+      else if(/too_many_responses/.test(err&&err.message||''))errorView(errText(err));
+      else friendAnswer(p,{nick,ans,err:'저장이 안 됐어. 인터넷 확인하고 다시 눌러줘. 답은 그대로 있어.'});
+    }};
+  document.getElementById('f').onsubmit=e=>{e.preventDefault();const nick=document.getElementById('nk').value.trim();
+    if(!nick){const er=document.getElementById('er');er.textContent='별명을 하나 정해줘.';er.hidden=false;return}
+    if(keep&&keep.ans){submit(nick,keep.ans);return}
+    quiz({mode:'friend',name:p.name,done:ans=>submit(nick,ans)})};
+}
+
+/* friend's ending: their view first, then the reveal of the real type */
+function friendDone(p,ans,nick,isDemo){
+  const fty=typeOf(axisShare([ans]));
+  app.innerHTML=`${isDemo?'<span class="badge">예시 · 서연이 지민 테스트를 끝낸 화면</span>':''}
+    <section class="panel"><span class="eyebrow">${esc(J(nick,'이','가'))} 본 ${esc(p.name)}</span>
+      <p class="muted">네 눈에 ${esc(J(p.name,'은','는'))}</p>
+      <h2>${nickname(fty)}</h2><p class="score">${fty}</p>
+      <button class="primary" id="rv">진짜 ${esc(p.name)} 공개하기</button></section>
+    <div id="out"></div>`;
+  go('rv',()=>{
+    const bt=p.real||typeOf(axisShare([p.self]));
+    const hit=[...fty].filter((c,i)=>c===bt[i]).length;
+    const same=[...ans].filter((c,i)=>c===p.self[i]).length;
+    const c=Math.round(closeness(p,ans)*100);
+    const verdict=c>=85?'찰떡이야. 너 '+p.name+' 진짜 잘 안다':c>=60?'꽤 잘 알아. 몇 개만 갈렸어':c>=35?'반은 맞혔어. 아직 모르는 면이 있네':'완전 반전이야. 다른 사람을 보고 있었던 거 아냐?';
+    const mi=[...ans].findIndex((ch,k)=>ch!==p.self[k]);
+    document.getElementById('rv').hidden=true;
+    document.getElementById('out').innerHTML=`<div class="list" style="gap:20px">
+      <section class="panel reveal"><span class="eyebrow">${p.real?'진짜 '+esc(p.name):esc(J(p.name,'이','가'))+' 직접 답한 결과'}</span>
+        <div class="big">${[...bt].map((ch,i)=>`<span class="${ch!==fty[i]?'miss':''}">${ch}</span>`).join('')}</div>
+        <h2>${nickname(bt)}</h2>
+        <p class="score">4글자 중 ${hit}개 맞힘 · 닮은 정도 ${c}%</p><p>${esc(verdict)}</p></section>
+      ${mi>=0?`<section class="panel"><span class="eyebrow">네가 놓친 장면</span>
+        <p>너는 <b>"${esc(QS[mi].t[ix(ans[mi])])}"</b>일 거라고 했지만,<br>${esc(J(p.name,'은','는'))} <b>"${esc(QS[mi].t[ix(p.self[mi])])}"</b>${P(QS[mi].t[ix(p.self[mi])],'이래','래')}.</p>
+        <p class="muted">${N}개 장면 중 ${same}개 같았어.</p></section>`:''}
+      <div class="row">${isDemo?'':'<button class="primary" id="all">다른 친구들 평가 보기</button>'}<button id="mine">나도 내 거울 만들기</button></div></div>`;
+    go('all',()=>nav(p.id));go('mine',createName);
+  });
+}
+
+/* results: public, but a friend sees them only after answering */
+function resultView(t,{demo=false,owner=false}={}){
+  const n=t.res.length;
+  if(!n){app.innerHTML=`<header class="hero"><span class="eyebrow">${esc(t.name)}의 거울</span><h2>아직 친구 답이 없어</h2>
+      <p class="muted">링크를 보내고 기다려봐. 답이 들어오면 여기에 바로 보여.</p></header>
+    <section class="panel"><h2>친구한테 보낼 링크</h2>${shareBlock(t.id,t.name)}</section>
+    <div class="row"><button id="rf">새로고침</button><button class="link" id="h">처음으로</button></div>`;
+    wireShare(t.id,t.name);go('rf',start);go('h',()=>nav(null));return}
+  const pq=perQuestion(t);const fty=typeOf(axisShare(t.res.map(r=>r.a)));
+  app.innerHTML=`<header class="hero">${demo?'<span class="badge">예시 데이터</span>':''}<span class="eyebrow">${esc(t.name)}의 거울 · 친구 ${n}명</span></header>
+    <section class="panel">${namesHTML(t,fty)}</section>
+    <section class="panel">${sceneHTML(t,pq)}</section>
+    <section class="panel"><h2>들킨 나, 숨은 나</h2>${windowsHTML(t,pq)}</section>
+    <section class="panel"><h2>친구끼리도 갈렸어</h2>${splitHTML(pq)}</section>
+    <section class="panel"><h2>누가 ${esc(J(t.name,'을','를'))} 제일 잘 알까</h2><p class="muted">가까울수록 비슷하게 본 친구야.</p>${orbitHTML(t)}</section>
+    ${demo?`<section class="panel"><h2>친구 쪽에선 이렇게 보여</h2><p class="muted">친구가 답을 다 하면 마지막에 진짜 ${esc(J(t.name,'이','가'))} 공개돼.</p><div class="row"><button id="demof">친구 화면 예시</button></div></section>`
+      :owner?`<section class="panel"><h2>친구 더 부르기</h2>${shareBlock(t.id,t.name)}</section>`
+      :`<section class="panel"><h2>나도 해볼래?</h2><p class="muted">친구들이 보는 나는 어떨까.</p><div class="row"><button class="primary" id="mine">내 거울 만들기</button></div></section>`}
+    <div class="row">${demo?'':'<button id="rf">새로고침</button>'}<button class="link" id="h">처음으로</button></div>`;
+  go('h',()=>nav(null));go('rf',start);go('mine',createName);
+  go('demof',()=>friendDone(DEMO,DEMO_FRIEND.a,DEMO_FRIEND.nick,true));
+  if(owner)wireShare(t.id,t.name);
+}
+
+async function open(id){
+  if(!sb){errorView('지금 서버에 연결이 안 돼. 잠시 후 다시 시도해줘.');return}
+  loading('거울 불러오는 중…');
+  try{
+    const t=await getMirror(id);
+    if(!t){app.innerHTML=`<section class="panel"><h2>없는 거울이야</h2><p class="muted">링크가 잘렸는지 확인해줘.</p><div class="row"><button class="primary" id="h">처음으로</button></div></section>`;go('h',()=>nav(null));return}
+    const m=mem();const owner=!!m.mine[id];
+    if(!owner&&!m.answered[id]){friendAnswer(t);return}
+    t.res=await getResponses(id);
+    resultView(t,{owner});
+  }catch(err){errorView(errText(err))}
+}
+
+function nav(id){try{history.pushState(null,'',id?'?m='+id:location.pathname)}catch(e){}id?open(id):home()}
+function start(){const id=new URLSearchParams(location.search).get('m');id&&/^[0-9a-f]{8}$/.test(id)?open(id):home()}
+window.addEventListener('popstate',start);
+start();
+</script>
